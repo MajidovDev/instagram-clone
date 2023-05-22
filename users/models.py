@@ -1,4 +1,6 @@
 import random
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from shared_app.models import BaseModel
@@ -48,6 +50,14 @@ class UserModel(AbstractUser, BaseModel):
             code=code
         )
         return code
+
+    def check_username(self):
+        if not self.username:
+            temp_username = f'instagram-{uuid.uuid4().__str__().split("-")[-1]}'
+            while UserModel.objects.filter(username=temp_username):
+                temp_username=f"{temp_username}{random.randint(0,9)}"
+            self.username = temp_username
+
 
 PHONE_EXPIRE = 2
 EMAIL_EXPIRE = 5
