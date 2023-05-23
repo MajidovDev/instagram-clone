@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 
-from users.models import UserModel, UserConfirmationModel, VIA_PHONE, VIA_EMAIL, CODE_VERIFIED, NEW, DONE, PHOTO_STEP
+from users.models import UserModel, UserConfirmationModel, VIA_PHONE, VIA_EMAIL, CODE_VERIFIED, NEW, DONE, PHOTO_DONE
 from rest_framework import exceptions
 from django.db.models import Q
 from rest_framework import serializers
