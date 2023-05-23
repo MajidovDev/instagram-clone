@@ -1,3 +1,5 @@
+from django.contrib.auth.password_validation import validate_password
+
 from users.models import UserModel, UserConfirmationModel, VIA_PHONE, VIA_EMAIL, CODE_VERIFIED, NEW, DONE, PHOTO_STEP
 from rest_framework import exceptions
 from django.db.models import Q
@@ -92,3 +94,56 @@ class SignUpSerializer(serializers.ModelSerializer):
         data.update(instance.token())
 
         return data
+
+
+class ChangeUserInfoSerializer(serializers.Serializer):
+    first_name = serializers.CharField(write_only=True, required=True)
+    last_name = serializers.CharField(write_only=True, required=True)
+    username = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        password = data.get('password', None)
+        confirm_password = data.get('confirm_password', None)
+        if password != confirm_password:
+            raise ValidationError(
+                {
+                    "message": "confirmation password doesn`t match."
+                }
+            )
+        if password:
+            validate_password(password)
+            validate_password(confirm_password)
+
+        return data
+
+    def validate_username(self, username):
+        if len(username)<5 or len(username)>30:
+            raise ValidationError(
+                {
+                    "message": "Username must be between 5 and 30 characters long"
+                }
+            )
+        if username.isdigit():
+            raise ValidationError(
+                {
+                    "message": "Username can not be numeric"
+                }
+            )
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.password = validated_data.get('password', instance.password)
+        instance.username = validated_data.get('username', instance.username)
+
+        if validated_data.get('password'):
+            instance.set_password(validated_data.get('password'))
+        if instance.auth_status == CODE_VERIFIED:
+            instance.auth_status = DONE
+        instance.save()
+
+        return instance
+
+
