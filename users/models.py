@@ -45,7 +45,7 @@ class UserModel(AbstractUser, BaseModel):
         return f"{self.first_name} {self.last_name}"
 
     def create_verify_code(self, verify_type):
-        code = "".join([str(random.randint((0, 100) % 100)) for _ in range(4)])
+        code = "".join([str(random.randint(0, 100) % 10) for _ in range(4)])
         UserConfirmationModel.objects.create(
             user_id=self.id,
             verify_type=verify_type,
@@ -57,7 +57,7 @@ class UserModel(AbstractUser, BaseModel):
         if not self.username:
             temp_username = f'instagram-{uuid.uuid4().__str__().split("-")[-1]}'
             while UserModel.objects.filter(username=temp_username):
-                temp_username=f"{temp_username}{random.randint(0,9)}"
+                temp_username = f"{temp_username}{random.randint(0,9)}"
             self.username = temp_username
 
     def check_email(self):
@@ -81,16 +81,16 @@ class UserModel(AbstractUser, BaseModel):
             "refresh_token": str(refresh)
         }
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(UserModel, self).save(*args, **kwargs)
+
     def clean(self):
         self.check_email()
         self.check_username()
         self.check_pass()
         self.hashing_password()
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.clean()
-        super(UserModel, self).save(*args, **kwargs)
 
 
 PHONE_EXPIRE = 2
@@ -106,18 +106,17 @@ class UserConfirmationModel(BaseModel):
     verify_type = models.CharField(max_length=31, choices=TYPE_CHOICES)
     user = models.ForeignKey('users.UserModel', models.CASCADE, related_name='verify_codes')
     expiration_time = models.DateTimeField(null=True)
-    is_cinfirmed = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.user.__str__())
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            if self.verify_type == VIA_EMAIL:
-                self.expiration_time = datetime.now() + timedelta(minutes=EMAIL_EXPIRE)
+        if self.verify_type == VIA_EMAIL:
+            self.expiration_time = datetime.now() + timedelta(minutes=EMAIL_EXPIRE)
 
-            else:
-                self.expiration_time = datetime.now() + timedelta(minutes=PHONE_EXPIRE)
+        else:
+            self.expiration_time = datetime.now() + timedelta(minutes=PHONE_EXPIRE)
         super(UserConfirmationModel, self).save(*args, **kwargs)
 
 

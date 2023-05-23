@@ -3,7 +3,7 @@ from rest_framework import exceptions
 from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from shared_app.utility import check_email_or_phone
+from shared_app.utility import check_email_or_phone, send_email, send_phone_code
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -31,11 +31,14 @@ class SignUpSerializer(serializers.ModelSerializer):
         if user.auth_type == VIA_EMAIL:
             code = user.create_verify_code(VIA_EMAIL)
             print(code)
-            # send_mail(user.email, code)
+            send_email(user.email, code)
         elif user.auth_type == VIA_PHONE:
             code = user.create_verify_code(VIA_PHONE)
             print(code)
-            # send_phone_code(user.phone_number, code)
+            send_email(user.phone_number, code)
+            # send_phone_code(user.phone_number, code) #twilio dan subscription olganda ishlatiladi
+        user.save()
+        return user
 
     def validate(self, data):
         super(SignUpSerializer, self).validate(data)
@@ -69,5 +72,23 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def validate_email_phone_number(self, value):
         value = value.lower()
-        # TODO
+        if value and UserModel.objects.filter(email=value).exists():
+            data = {
+                "success": False,
+                "message": "This email already exists."
+            }
+            raise ValidationError(data)
+        elif value and UserModel.objects.filter(phone_number=value).exists():
+            data = {
+                "success": False,
+                "message": "This phone number already exists."
+            }
+            raise ValidationError(data)
         return value
+
+    def to_representation(self, instance):
+        print('to_rep', instance)
+        data = super(SignUpSerializer, self).to_representation(instance)
+        data.update(instance.token())
+
+        return data
