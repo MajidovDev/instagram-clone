@@ -6,7 +6,9 @@ from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from users.models import UserModel, DONE, CODE_VERIFIED, NEW
+
+from shared_app.utility import send_email
+from users.models import UserModel, DONE, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE
 from users.serializers import SignUpSerializer
 
 
@@ -46,3 +48,36 @@ class VerifyAPIView(APIView):
             user.auth_status = CODE_VERIFIED
             user.save()
         return True
+
+
+class GetNewVerification(APIView):
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        self.check_verification(user)
+        if user.auth_type == VIA_EMAIL:
+            code = user.create_verify_code(VIA_EMAIL)
+            send_email(user.email, code)
+        elif user.auth_type == VIA_PHONE:
+            code = user.create_verify_code(VIA_EMAIL)
+            send_email(user.phone_number, code)
+        else:
+            data = {
+                "message": "Email or Phone Number is incorrect"
+            }
+            raise ValidationError(data)
+        return Response(
+            {
+                "success": True,
+                "message": "Your confirmation code resent"
+            }
+        )
+
+    @staticmethod
+    def check_verification(user):
+        verifies = user.verify_codes.filter(expiration_time__gte=datetime.now(), is_confirmed=False)
+        if verifies.exists():
+            data = {
+                "message": "Kodingiz ishlatishga yaroqli, Biroz kutib turing"
+            }
+            raise ValidationError(data)
+
