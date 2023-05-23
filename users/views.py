@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from shared_app.utility import send_email
 from users.models import UserModel, DONE, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE
-from users.serializers import SignUpSerializer, ChangeUserInfoSerializer
+from users.serializers import SignUpSerializer, ChangeUserInfoSerializer, ChangeUserPhotoSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -107,3 +107,22 @@ class ChangeUserInfoView(UpdateAPIView):
             "auth_status": self.request.user.auth_status,
         }
         return Response(data, status=200)
+
+
+class ChangeUserPhotoView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
+    def put(self, request, *args, **kwargs):
+        serializer = ChangeUserPhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            serializer.update(user, serializer.validated_data)
+            return Response(
+                {
+                    "message": "Photo updated successfully"
+                },
+                status=200
+            )
+        return Response(
+            serializer.errors, status=400
+        )
