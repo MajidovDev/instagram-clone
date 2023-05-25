@@ -18,7 +18,7 @@ class PostLikeAdmin(admin.ModelAdmin):
 
 
 class CommentLikeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'post', 'created_time')
+    list_display = ('id', 'author', 'comment', 'created_time')
     search_fields = ('id', 'author__username')
 
 
