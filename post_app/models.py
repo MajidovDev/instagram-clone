@@ -20,6 +20,9 @@ class PostModel(BaseModel):
         verbose_name = "post"
         verbose_name_plural = "posts"
 
+    def __str__(self):
+        return f"{self.author} post about {self.caption}"
+
 
 class PostCommentModel(BaseModel):
     author = models.ForeignKey(UserModel, on_delete=models.CASCADE)
@@ -32,6 +35,9 @@ class PostCommentModel(BaseModel):
         null=True,
         blank=True
     )
+
+    def __str__(self):
+        return f"{self.author} commented"
 
 
 class PostLikeModel(BaseModel):
@@ -46,6 +52,9 @@ class PostLikeModel(BaseModel):
             )
         ]
 
+    def __str__(self):
+        return f"{self.author} liked"
+
 
 class CommentLikeModel(BaseModel):
     author = models.ForeignKey(UserModel, on_delete=models.CASCADE)
@@ -58,3 +67,6 @@ class CommentLikeModel(BaseModel):
                 name="comment-like"
             )
         ]
+
+    def __str__(self):
+        return f"{self.author} liked the comment {self.comment}"
