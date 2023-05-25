@@ -6,11 +6,12 @@ from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from shared_app.utility import send_email
 from users.models import UserModel, DONE, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE
-from users.serializers import SignUpSerializer, ChangeUserInfoSerializer, ChangeUserPhotoSerializer, LoginSerializer
+from users.serializers import SignUpSerializer, ChangeUserInfoSerializer, ChangeUserPhotoSerializer, LoginSerializer, \
+    LoginRefreshSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -131,3 +132,7 @@ class ChangeUserPhotoView(APIView):
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+
+
+class LoginRefreshView(TokenRefreshView):
+    serializer_class = LoginRefreshSerializer
