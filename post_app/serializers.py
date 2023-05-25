@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from post_app.models import PostModel, UserModel, PostLikeModel, PostCommentModel
+from post_app.models import PostModel, UserModel, PostLikeModel, PostCommentModel, CommentLikeModel
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,12 +20,23 @@ class PostSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = PostModel
-        fields = ("id", "author", "image", "caption", "created_time", "get_post_likes_count", "get_post_comments_count", "me_liked")
+        fields = [
+            "id",
+            "author",
+            "image",
+            "caption",
+            "created_time",
+            "get_post_likes_count",
+            "get_post_comments_count",
+            "me_liked"
+        ]
 
-    def get_post_likes_count(self, obj):
+    @staticmethod
+    def get_post_likes_count(obj):
         return obj.likes.count()
 
-    def get_post_comments_count(self, obj):
+    @staticmethod
+    def get_post_comments_count(obj):
         return obj.comments.count()
 
     def get_me_liked(self, obj):
@@ -36,7 +47,7 @@ class PostSerializers(serializers.ModelSerializer):
                 return True
             except PostLikeModel.DoesNotExist:
                 return False
-        return False
+        return True
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -64,5 +75,24 @@ class CommentSerializer(serializers.ModelSerializer):
         else:
             return False
 
-    def get_likes_count(self, obj):
+    @staticmethod
+    def get_likes_count(obj):
         return obj.likes.count()
+
+
+class CommentLikeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = CommentLikeModel
+        fields = ("id", "author", "comment")
+
+
+class PostLikeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = PostLikeModel
+        fields = ("id", "author", "post")
