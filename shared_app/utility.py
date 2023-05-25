@@ -14,7 +14,6 @@ username_regex = re.compile(r"^[a-zA-Z0-9_.-]+$")
 
 
 def check_email_or_phone(email_or_phone):
-    phone_number = phonenumbers.parse(email_or_phone)
     if re.fullmatch(email_regex, email_or_phone):
         email_or_phone = "email"
     elif re.fullmatch(phone_regex, email_or_phone):

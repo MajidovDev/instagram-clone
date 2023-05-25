@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -13,7 +14,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from shared_app.utility import send_email, check_email_or_phone
 from users.models import UserModel, DONE, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE
 from users.serializers import SignUpSerializer, ChangeUserInfoSerializer, ChangeUserPhotoSerializer, LoginSerializer, \
-    LoginRefreshSerializer, LogOutSerializer, ForgotPasswordSerializer
+    LoginRefreshSerializer, LogOutSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -186,3 +187,25 @@ class ForgotPasswordView(APIView):
         )
 
 
+class ResetPasswordView(UpdateAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = [IsAuthenticated, ]
+    http_method_names = ['patch', 'put']
+
+    def get_object(self):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        resonse = super(ResetPasswordView, self).update(request, *args, **kwargs)
+        try:
+            user = UserModel.objects.get(id=resonse.data.get('id'))
+        except ObjectDoesNotExist as e:
+            raise NotFound(detail="user not found")
+        return Response(
+            {
+                "success": True,
+                "message": "Password successfully changed",
+                "access": user.token()['access'],
+                "refresh": user.token()['refresh_token'],
+            }
+        )
