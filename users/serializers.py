@@ -10,7 +10,7 @@ from users.models import UserModel, UserConfirmationModel, VIA_PHONE, VIA_EMAIL,
 from rest_framework import exceptions
 from django.db.models import Q
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, NotFound
 from shared_app.utility import check_email_or_phone, send_email, send_phone_code, check_user_type
 
 
@@ -248,3 +248,22 @@ class LoginRefreshSerializer(TokenRefreshSerializer):
 
 class LogOutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email_or_phone = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, attrs):
+        email_or_phone = attrs.get('email_or_phone', None)
+        if email_or_phone is None:
+            raise ValidationError(
+                {
+                    "success": False,
+                    "message": "email or phone number must be entered"
+                }
+            )
+        user = UserModel.objects.filter(Q(phone_number=email_or_phone) | Q(email=email_or_phone))
+        if not user.exists():
+            raise NotFound(detail="User not found")
+        attrs['user'] = user.first()
+        return attrs
