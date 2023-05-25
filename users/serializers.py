@@ -244,3 +244,7 @@ class LoginRefreshSerializer(TokenRefreshSerializer):
         user = get_object_or_404(UserModel, id=user_id)
         update_last_login(None, user)
         return data
+
+
+class LogOutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
