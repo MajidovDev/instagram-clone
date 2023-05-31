@@ -150,4 +150,46 @@ class PostCommentLikesListView(generics.ListAPIView):
         return queryset
 
 
-# class PostCommentLikeView(generics.Ap)
+class PostCommentLikeView(APIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def post(self, request, pk):
+        try:
+            comment_like = CommentLikeModel.objects.create(
+                author=self.request.user,
+                comment_id=pk
+            )
+            serializer = CommentLikeSerializer(comment_like)
+            data = {
+                "success": True,
+                "message": "Comment successfully liked",
+                "data": serializer.data
+            }
+            return Response(data, status.HTTP_201_CREATED)
+        except Exception as e:
+            data = {
+                "success": False,
+                "message": f"{e}",
+                "data": None
+            }
+            return Response(data, status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            comment_like = CommentLikeModel.objects.get(
+                author=self.request.user,
+                comment_id=pk
+            )
+            comment_like.delete()
+            data={
+                "success": True,
+                "message": "Comment Like successfully DELETED"
+            }
+            return Response(data, status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            data = {
+                "success": True,
+                "message": f"{e}"
+            }
+            return Response(data, status.HTTP_400_BAD_REQUEST)
