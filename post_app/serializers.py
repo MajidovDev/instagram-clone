@@ -25,9 +25,9 @@ class PostSerializers(serializers.ModelSerializer):
             "author",
             "image",
             "caption",
+            "post_likes_count",
+            "post_comments_count",
             "created_time",
-            "get_post_likes_count",
-            "get_post_comments_count",
             "me_liked"
         ]
 
