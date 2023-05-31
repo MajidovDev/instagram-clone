@@ -110,7 +110,7 @@ class PostLikeView(APIView):
                 "message": "Post Like Successfully DELETED",
             }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
+        except PostLikeModel.DoesNotExist:
             post_like = PostLikeModel.objects.create(
                 author=self.request.user,
                 post_id=pk
