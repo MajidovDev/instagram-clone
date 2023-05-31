@@ -97,3 +97,4 @@ class PostLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostLikeModel
         fields = ("id", "author", "post")
+        extra_kwargs = {"post": {"required": False}}
