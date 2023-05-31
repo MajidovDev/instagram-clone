@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.views import APIView
 
 from post_app.models import PostModel, PostLikeModel, PostCommentModel, CommentLikeModel
 from post_app.serializers import PostSerializers, PostLikeSerializer, CommentSerializer, CommentLikeSerializer
@@ -93,7 +94,7 @@ class PostLikesListView(generics.ListAPIView):
         return queryset
 
 
-class PostLikeView(generics.CreateAPIView):
+class PostLikeView(APIView):
     serializer_class = PostLikeSerializer
     permission_classes = [IsAuthenticated, ]
 
@@ -148,3 +149,5 @@ class PostCommentLikesListView(generics.ListAPIView):
         queryset = CommentLikeModel.objects.filter(comment__id=comment_id)
         return queryset
 
+
+# class PostCommentLikeView(generics.Ap)
