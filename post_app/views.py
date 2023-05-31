@@ -100,6 +100,17 @@ class PostLikeView(APIView):
 
     def post(self, request, pk):
         try:
+            post_like = PostLikeModel.objects.get(
+                author=self.request.user,
+                post_id=pk
+            )
+            post_like.delete()
+            data = {
+                "success": False,
+                "message": "Post Like Successfully DELETED",
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
             post_like = PostLikeModel.objects.create(
                 author=self.request.user,
                 post_id=pk
@@ -111,32 +122,46 @@ class PostLikeView(APIView):
                 "data": serializer.data
             }
             return Response(data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            data = {
-                "success": False,
-                "message": f"{str(e)}",
-                "data": None
-            }
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
-        try:
-            post_like = PostLikeModel.objects.get(
-                author=self.request.user,
-                post_id=pk
-            )
-            post_like.delete()
-            data = {
-                "success": True,
-                "message": "Like successfully deleted"
-            }
-            return Response(data, status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            data = {
-                "success": False,
-                "message": f"{str(e)}"
-            }
-            return Response(data, status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, pk):
+    #     try:
+    #         post_like = PostLikeModel.objects.create(
+    #             author=self.request.user,
+    #             post_id=pk
+    #         )
+    #         serializer = PostLikeSerializer(post_like)
+    #         data = {
+    #             "success": True,
+    #             "message": "Post Successfully liked",
+    #             "data": serializer.data
+    #         }
+    #         return Response(data, status=status.HTTP_201_CREATED)
+    #     except Exception as e:
+    #         data = {
+    #             "success": False,
+    #             "message": f"{str(e)}",
+    #             "data": None
+    #         }
+    #         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # def delete(self, request, pk):
+    #     try:
+    #         post_like = PostLikeModel.objects.get(
+    #             author=self.request.user,
+    #             post_id=pk
+    #         )
+    #         post_like.delete()
+    #         data = {
+    #             "success": True,
+    #             "message": "Like successfully deleted"
+    #         }
+    #         return Response(data, status.HTTP_204_NO_CONTENT)
+    #     except Exception as e:
+    #         data = {
+    #             "success": False,
+    #             "message": f"{str(e)}"
+    #         }
+    #         return Response(data, status.HTTP_400_BAD_REQUEST)
 
 
 class PostCommentLikesListView(generics.ListAPIView):
