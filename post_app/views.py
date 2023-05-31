@@ -53,6 +53,7 @@ class PostRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView):
 class PostCommentListView(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [AllowAny, ]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         post_id = self.kwargs['pk']
